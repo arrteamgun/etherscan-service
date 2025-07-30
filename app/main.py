@@ -3,7 +3,7 @@ import os
 import requests
 
 
-def get_last_block(url: str):
+def get_last_block(api_key: str, url: str):
     payload = {'module': 'proxy',
                'action': 'eth_blockNumber', 'apikey': api_key}
     resp = requests.get(url, params=payload)
@@ -11,9 +11,9 @@ def get_last_block(url: str):
     return int(data['result'], 16)
 
 
-def get_transactions(api_key: str, url: str):
+def get_transactions(api_key: str, url: str, tag):
     payload = {'module': 'proxy', 'action': 'eth_getBlockByNumber',
-               'apikey': api_key, 'boolean': 'true', 'tag': f'{hex(i)}'}
+               'apikey': api_key, 'boolean': 'true', 'tag': f'{hex(tag)}'}
     res = requests.get(url, params=payload).json()
     return res['result']['transactions']
 
@@ -24,10 +24,10 @@ def main():
     etherscan_api_url = os.getenv("ETHERSCAN_API_URL")
     counter = {}
 
-    last_block = get_last_block(etherscan_api_url)
+    last_block = get_last_block(api_key, etherscan_api_url)
 
-    for _ in range(last_block-100, last_block):
-        transactions = get_transactions(api_key, etherscan_api_url)
+    for i in range(last_block-100, last_block):
+        transactions = get_transactions(api_key, etherscan_api_url, i)
         for t in transactions:
             t_from = t['from']
             t_to = t['to']
